@@ -1,0 +1,256 @@
+# DML문장
+- INSERT
+- UPDATE
+- DELETE
+
+[1] INSERT 문
+
+INSERT  INTO 테이블명(컬럼명1, 컬럼명2, ...)
+VALUES (값1, 값2, ...);
+
+INSERT INTO 테이블명
+VALUES (값1, 값2, ....); - 모든 값을 다 집어넣어야 함
+
+EMP테이블을 COPY하여 EMP2를 만듭시다
+CREATE TABLE EMP2
+AS
+SELECT * FROM EMP;
+
+SELECT * FROM EMP2;
+
+INSERT INTO EMP2(EMPNO, ENAME, JOB, HIREDATE, DEPTNO)
+VALUES(8001, 'TOM', 'MANAGER', SYSDATE, 40);
+
+ROLLBACK;
+
+SELECT * FROM EMP2;
+COMMIT;
+
+INSERT INTO EMP2
+VALUES(8002, 'SUSAN', 'SALESMAN', 7788, SYSDATE, 4000, 500, 30);
+
+SELECT * FROM EMP2;
+COMMIT;
+
+--DEPT테이블을 COPY하되 테이블 구조만 카피하세요
+--그런뒤 아래 데이터를 삽입해보세요
+--
+CREATE TABLE DEPT2
+AS
+SELECT * FROM DEPT
+WHERE 1=2;
+
+SELECT * FROM DEPT2;
+--10 회계부서 뉴욕
+--20 연구부서 달라스
+--30 영업부서 LA
+--40 운영부서 보스턴
+INSERT INTO DEPT2
+VALUES (10, '회계부서', '뉴욕');
+
+INSERT INTO DEPT2(LOC, DNAME, DEPTNO)
+VALUES ('달라스', '연구부서', 20);
+
+INSERT INTO DEPT2
+VALUES (30, '영업부서', 'LA');
+
+INSERT INTO DEPT2
+VALUES (40, '운영부서', '보스턴');
+
+SELECT * FROM DEPT2;
+COMMIT;
+
+DESC DEPT2;
+INSERT INTO DEPT2
+VALUES(NULL, NULL, NULL);
+
+SELECT * FROM DEPT2;
+ROLLBACK;
+
+DESC EMP2;
+
+INSERT INTO EMP2(EMPNO)
+VALUES(8003);
+SELECT * FROM EMP2;
+
+INSERT INTO EMP2(EMPNO, ENAME)
+VALUES(8004, 'PETER');
+SELECT * FROM EMP2;
+ROLLBACK;
+
+- 여러 데이터를 한꺼번에 INSERT 하기
+INSERT ALL 
+INTO DEPT2 
+VALUES(50,'교육부서', '서울')
+INTO DEPT2
+VALUES(60, '노무부', '인천')
+INTO DEPT2
+VALUES(70, '기획부', '수원')
+SELECT * FROM DUAL;
+--SELECT문이 없으면 에러 발생함 
+
+SELECT * FROM DEPT2;
+COMMIT;
+
+
+-----------------------------------------------
+#데이터 수정
+UPDATE 테이블명 SET 컬럼명1=값1, 컬럼명2=값2, ...
+WHERE 조건절;
+
+--emp2테이블에서 사번이 7788인 사원의 부서번호를 10으로 
+--	수정하세요.
+UPDATE EMP2 SET DEPTNO=10 WHERE EMPNO=7788;
+SELECT * FROM EMP2;
+ROLLBACK;
+--emp2 테이블에서 사번이 7788인 사원의 부서를 20,
+--	급여를 3500으로 변경하여라.
+--UPDATE EMP2 SET DEPTNO=20, SAL=3500 WHERE EMPNO=7788;
+UPDATE EMP2 SET DEPTNO=20, SAL=SAL+500 WHERE EMPNO=7788;
+
+SELECT * FROM EMP2;
+
+emp2에서 모든 사원의 급여를 10%씩 인상하세요
+UPDATE EMP2 SET SAL= SAL*1.1;
+SELECT * FROM EMP2;
+ROLLBACK;
+
+--EMP2테이블에서 SCOTT의 업무와 급여가 일치하도록
+--		JONES의 업무와 급여를 변경하여라.
+
+--SUBQUERY
+UPDATE EMP2
+SET JOB=(SELECT JOB FROM EMP WHERE ENAME='SCOTT'),
+SAL=(SELECT SAL FROM EMP WHERE ENAME='SCOTT')
+WHERE ENAME='JONES';
+
+SELECT * FROM EMP2;
+ROLLBACK;
+
+------------------------------------------------------------------
+-- [문제]
+--
+--	 1] 고객 테이블 중 이름이 '홍길동'인 사람의 이름을 
+--	      박길동으로 변경하세요.
+UPDATE MEMBER SET NAME='박길동' WHERE NAME='홍길동';
+SELECT * FROM MEMBER;
+ROLLBACK;
+
+--	...김길동이 2명일 경우...where조건절을 좀 더 구체적으로 하여 변경한다.
+
+
+
+--	 2] 등록된 고객 정보 중 고객의 나이를 현재 나이에서 모두 5를 더한 값으로 
+--	      수정하세요.
+UPDATE MEMBER SET AGE=AGE+5;
+SELECT * FROM MEMBER;
+ROLLBACK;
+
+--	 2_1] 고객 중 13/09/01이후 등록한 고객들의 마일리지를 350점씩 올려주세요.
+UPDATE MEMBER SET MILEAGE= MILEAGE + 350 WHERE REG_DATE > '13/09/01';
+UPDATE MEMBER SET MILEAGE= MILEAGE + 350 WHERE REG_DATE > TO_DATE('13/09/01', 'YY/MM/DD');
+SELECT * FROM MEMBER;
+ROLLBACK;
+
+--	 3]수정하려는 정보가 문자가 아닌 컬럼이름이나 함수라고 해도 update구문을
+--	실행하는데 전혀 문제가 없다. 아래 예제 참조.
+	
+--	 4] 등록되어 있는 고객 정보 중 이름에 '김'자가 들어있는 모든 이름을 '김' 대신
+--	     '최'로 변경하세요.
+UPDATE MEMBER SET NAME=REPLACE(NAME, '김', '최');
+UPDATE MEMBER SET NAME=REPLACE(NAME, '김', '최') WHERE NAME LIKE '%김%';
+SELECT * FROM MEMBER;
+ROLLBACK;
+
+
+--DEPT2테이블의 DEPTNO 컬럼에 PRIMARY KEY 제약조건을 추가해보자
+
+ALTER TABLE DEPT2 ADD CONSTRAINT DEPT2_DEPTNO_PK PRIMARY KEY (DEPTNO);
+
+DESC DEPT2;
+
+SELECT * FROM DEPT2;
+
+EMP2테이블의 DEPTNO컬럼을 DEPT2의 DEPTNO컬럼을 참조하는 외래키로 제약조건을 추가해보자
+ALTER TABLE EMP2 ADD CONSTRAINT EMP2_DEPTNO_FK FOREIGN KEY (DEPTNO)
+REFERENCES DEPT2 (DEPTNO);
+
+SELECT * FROM EMP2;
+
+EMP2 7566번 사원의 부서번호를 40번 부서로 수정하세요
+
+UPDATE EMP2 SET DEPTNO=40
+WHERE EMPNO=7566;
+
+7521번 사원의 부서번호를 90번 부서로 수정하세요
+UPDATE EMP2 SET DEPTNO=90
+WHERE EMPNO=7521;
+--부모테이블에 없는 데이터로 수정하려고 할 경우 무결성 제약조건 에러가 발생한다
+
+
+----------------------------------------------
+#DELETE 문 - 데이터 삭제
+DELETE FROM 테이블명 WHERE 조건절;
+
+-- EMP2테이블에서 사원번호가 7499인 사원의 정보를 삭제하라.
+DELETE FROM EMP2 WHERE EMPNO=7499;
+SELECT * FROM EMP2;
+ROLLBACK;
+
+-- EMP2테이블에서 입사일자가 83년인 사원의 정보를 삭제하라.
+DELETE FROM EMP2 WHERE TO_CHAR(HIREDATE, 'YY') = '83';
+
+--EMP2테이블에서 부서명이 'SALES'인 사원의 정보를 삭제하세요
+DELETE FROM EMP2 WHERE DEPTNO = (SELECT DEPTNO FROM DEPT WHERE DNAME='SALES');
+ROLLBACK;
+
+--1] 상품 테이블에 있는 상품 중 상품의 판매 가격이 10000원 이하인 상품을 모두 삭제하세요.
+DELETE FROM PRODUCTS WHERE OUTPUT_PRICE <= 10000;
+SELECT * FROM PRODUCTS;
+ROLLBACK;
+
+
+--	2] 상품 테이블에 있는 상품 중 상품의 대분류가 도서인 상품을 삭제하세요.
+SELECT * FROM CATEGORY;
+DELETE FROM PRODUCTS WHERE CATEGORY_FK = (SELECT CATEGORY_CODE FROM CATEGORY WHERE CATEGORY_NAME='도서');
+
+
+--	3] 상품 테이블에 있는 모든 내용을 삭제하세요.
+DELETE FROM PRODUCTS;
+SELECT * FROM PRODUCTS;
+ROLLBACK;
+
+-- DEPT2에서 10번부서를 삭제하세요
+DELETE FROM DEPT2 WHERE DEPTNO=10;
+SELECT * FROM DEPT2;
+
+SELECT * FROM EMP2 WHERE DEPTNO=10;
+10번 부서 사원들을 20번 부서로 수정하시오
+
+UPDATE EMP2 SET DEPTNO=20 WHERE DEPTNO=10;
+ROLLBACK;
+
+--# TCL - TRANSACTION CONTROL LANGUAGE 
+COMMIT
+ROLLBACK
+SAVEPOINT
+
+SAVEPOINT : 저장점을 설정할 때 사용한다
+
+--7788번 사원의 이름을 CHARSE로 변경하세요
+UPDATE EMP2 SET ENAME='CHARSE' WHERE EMPNO=7788;
+SELECT * FROM EMP2;
+--저장점 설정
+SAVEPOINT MYPOINT;
+--EMP에서 모든 사원의 JOB을 MANAGER를 변경한다
+UPDATE EMP2 SET JOB='MANAGER';
+SELECT * FROM EMP2;
+--ROLLBACK할 때 저장점 까지만 ROLLBACK 해보자
+ROLLBACK TO MYPOINT;
+
+
+
+
+
+
+
