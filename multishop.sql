@@ -161,3 +161,41 @@ ALTER TABLE product
 			upcg_code
 		);
 ------------------------------------------------------------
+
+--sequence
+drop sequence upCategory_seq;
+create sequence upCategory_seq nocache;
+
+drop sequence downCategory_seq;
+create sequence downCategory_seq nocache;
+
+drop sequence product_seq;
+create sequence product_seq nocache;
+
+insert into upCategory values(upCategory_seq.nextval, '컴퓨터.디지털.가전');
+insert into upCategory values(upCategory_seq.nextval, '패션의류.잡화.뷰티');
+commit;
+
+select * from upCategory;
+
+insert into downCategory(upcg_code, downcg_code, downcg_name)
+values(1, downCategory_seq.nextval, '노트북');
+insert into downCategory(upcg_code, downcg_code, downcg_name)
+values(1, downCategory_seq.nextval, '모니터');
+insert into downCategory(upcg_code, downcg_code, downcg_name)
+values(1, downCategory_seq.nextval, '주방가전');
+
+insert into downCategory(upcg_code, downcg_code, downcg_name)
+values(2, downCategory_seq.nextval, '여성의류');
+insert into downCategory(upcg_code, downcg_code, downcg_name)
+values(2, downCategory_seq.nextval, '남성의류');
+commit;
+select * from downCategory;
+
+
+select * from product;
+
+
+
+
+
